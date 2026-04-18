@@ -1,0 +1,190 @@
+import { useState } from 'react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+import { User, Lock, Save, TrendingUp } from 'lucide-react';
+
+export default function ProfilePage() {
+  const { user, setUser } = useAuth();
+
+  const [profileForm, setProfileForm] = useState({
+    name:          user?.name          || '',
+    phone:         user?.phone         || '',
+    occupation:    user?.occupation    || '',
+    age:           user?.age           || '',
+    monthlyIncome: user?.monthlyIncome || '',
+  });
+
+  const [passForm, setPassForm] = useState({
+    currentPassword: '', newPassword: '', confirmPassword: '',
+  });
+
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPass,    setSavingPass]    = useState(false);
+  const [activeTab,     setActiveTab]     = useState('profile');
+
+  // Avatar — initials based
+  const initials = user?.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'U';
+  const avatarColors = ['bg-blue-600', 'bg-purple-600', 'bg-emerald-600', 'bg-orange-600', 'bg-pink-600'];
+  const avatarColor  = avatarColors[(user?.name?.charCodeAt(0) || 0) % avatarColors.length];
+
+  const handleProfileSave = async (e) => {
+    e.preventDefault();
+    setSavingProfile(true);
+    try {
+      const { data } = await axios.put('/api/auth/profile', {
+        ...profileForm,
+        age:           Number(profileForm.age)           || null,
+        monthlyIncome: Number(profileForm.monthlyIncome) || 0,
+      });
+      setUser(data);
+      toast.success('Profile update ho gaya! ✅');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Update nahi hua');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handlePassChange = async (e) => {
+    e.preventDefault();
+    if (passForm.newPassword !== passForm.confirmPassword)
+      return toast.error('New passwords match nahi kar rahe');
+    if (passForm.newPassword.length < 6)
+      return toast.error('Password kam se kam 6 characters ka hona chahiye');
+    setSavingPass(true);
+    try {
+      await axios.put('/api/auth/change-password', {
+        currentPassword: passForm.currentPassword,
+        newPassword:     passForm.newPassword,
+      });
+      toast.success('Password change ho gaya! 🔒');
+      setPassForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Password change nahi hua');
+    } finally {
+      setSavingPass(false);
+    }
+  };
+
+  const setP  = (f) => (e) => setProfileForm(p => ({ ...p, [f]: e.target.value }));
+  const setPw = (f) => (e) => setPassForm(p => ({ ...p, [f]: e.target.value }));
+
+  return (
+    <div className="space-y-6 max-w-3xl mx-auto">
+      <h2 className="text-xl font-bold text-white">My Profile</h2>
+
+      {/* Avatar + Name Card */}
+      <div className="card flex items-center gap-5">
+        <div className={`w-20 h-20 rounded-2xl ${avatarColor} flex items-center justify-center flex-shrink-0`}>
+          <span className="text-white font-bold text-3xl">{initials}</span>
+        </div>
+        <div>
+          <h3 className="text-white font-bold text-xl">{user?.name}</h3>
+          <p className="text-gray-400 text-sm">{user?.email}</p>
+          {user?.occupation && <p className="text-gray-500 text-sm mt-0.5">{user?.occupation}</p>}
+          <div className="flex items-center gap-2 mt-2">
+            <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-0.5 rounded-full">
+              💰 ₹{user?.monthlyIncome?.toLocaleString()}/month
+            </span>
+            {user?.age && (
+              <span className="bg-gray-700 text-gray-400 text-xs px-2 py-0.5 rounded-full">
+                🎂 {user?.age} years
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex bg-gray-900 border border-gray-800 rounded-xl p-1 gap-1 w-fit">
+        {[
+          { val: 'profile',  label: '👤 Edit Profile'     },
+          { val: 'password', label: '🔒 Change Password'  },
+        ].map(({ val, label }) => (
+          <button key={val} onClick={() => setActiveTab(val)}
+            className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === val ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+            }`}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Profile Form */}
+      {activeTab === 'profile' && (
+        <div className="card">
+          <h3 className="font-semibold text-white mb-5 flex items-center gap-2">
+            <User className="w-5 h-5 text-blue-400" /> Personal Information
+          </h3>
+          <form onSubmit={handleProfileSave} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="label">Full Name</label>
+                <input className="input" placeholder="John Doe"
+                  value={profileForm.name} onChange={setP('name')} required />
+              </div>
+              <div>
+                <label className="label">Phone Number</label>
+                <input className="input" placeholder="+91 98765 43210"
+                  value={profileForm.phone} onChange={setP('phone')} />
+              </div>
+              <div>
+                <label className="label">Occupation</label>
+                <input className="input" placeholder="Software Engineer, Teacher..."
+                  value={profileForm.occupation} onChange={setP('occupation')} />
+              </div>
+              <div>
+                <label className="label">Age</label>
+                <input className="input" type="number" placeholder="25"
+                  value={profileForm.age} onChange={setP('age')} min={1} max={100} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="label">Monthly Income (₹)</label>
+                <input className="input" type="number" placeholder="50000"
+                  value={profileForm.monthlyIncome} onChange={setP('monthlyIncome')} min={0} />
+                <p className="text-gray-500 text-xs mt-1">
+                  Ye change karne se budget suggestions aur AI advice update ho jaayegi
+                </p>
+              </div>
+            </div>
+            <button type="submit" className="btn-primary flex items-center gap-2" disabled={savingProfile}>
+              <Save className="w-4 h-4" />
+              {savingProfile ? 'Saving...' : 'Profile Save Karo'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Password Form */}
+      {activeTab === 'password' && (
+        <div className="card">
+          <h3 className="font-semibold text-white mb-5 flex items-center gap-2">
+            <Lock className="w-5 h-5 text-yellow-400" /> Change Password
+          </h3>
+          <form onSubmit={handlePassChange} className="space-y-4 max-w-sm">
+            <div>
+              <label className="label">Current Password</label>
+              <input className="input" type="password" placeholder="••••••••"
+                value={passForm.currentPassword} onChange={setPw('currentPassword')} required />
+            </div>
+            <div>
+              <label className="label">New Password</label>
+              <input className="input" type="password" placeholder="••••••••"
+                value={passForm.newPassword} onChange={setPw('newPassword')} required minLength={6} />
+            </div>
+            <div>
+              <label className="label">Confirm New Password</label>
+              <input className="input" type="password" placeholder="••••••••"
+                value={passForm.confirmPassword} onChange={setPw('confirmPassword')} required minLength={6} />
+            </div>
+            <button type="submit" className="btn-primary flex items-center gap-2" disabled={savingPass}>
+              <Lock className="w-4 h-4" />
+              {savingPass ? 'Changing...' : 'Password Change Karo'}
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
