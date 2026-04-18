@@ -172,8 +172,27 @@ Sirf valid JSON return karo.`;
 
     res.json(JSON.parse(jsonMatch[0]));
   } catch (err) {
-    console.error('AI advice error:', err);
-    res.status(500).json({ message: 'AI advice generate nahi hua. Try again!' });
+    console.error('AI advice error (using fallback):', err.message);
+    
+    // Predefined Fallback Data if Gemini API fails
+    const { risk, horizon, allocation } = req.body;
+    const topAsset = allocation && allocation.length > 0 ? allocation[0].name : 'Mutual Funds';
+
+    res.json({
+      personalizedSummary: `Aapka risk appetite '${risk}' hai aur aap '${horizon}' term ke liye invest kar rahe hain. Is situation mein apne paise ko smartly divide karna sabse zaroori hai taaki risk aur return balance ho sake.`,
+      whyThisPlan: `Ye plan isliye best hai kyunki isme '${topAsset}' ka bada hissa hai, jo aapko mehengai (inflation) ko beat karne mein madad karega bina unnecessarily aapki neend udaye.`,
+      howToStart: [
+        "Sabse pehle apna ek chhota sa Emergency Fund alag nikal lein.",
+        "Kisi reliable platform (jaise Groww, Zerodha, ya apna Bank app) par account open karein.",
+        "Invest amount ko ek baar mein lagane ke bajaye, har mahine SIP (Systematic Investment Plan) ke through lagana shuru karein."
+      ],
+      importantWarnings: [
+        "Market girne par panic hoke (ghabrakar) paise bahar mat nikalna.",
+        "Kabhi bhi udhaar (loan) lekar kisi risky asset mein invest mat karna."
+      ],
+      alternativeTip: "Agar aapko lagta hai ki ye plan thoda risky hai, toh aap 'Fixed Deposit' ya 'PPF' mein apna zyada paisa daal sakte hain jahan return 100% safe aur fix hota hai.",
+      motivationalNote: "Paisa ped par nahi ugta, par sahi jagah invest karne par bilkul ped ki tarah badhta hai! 🌱"
+    });
   }
 };
 

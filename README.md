@@ -84,11 +84,18 @@ The app will be running at `http://localhost:3000`.
 ---
 
 ## 📸 Features Gallery
-*(Note: Add your actual project screenshots here before final submission!)*
-* **Dashboard & Spending Analytics**
-* **FinBot Chat Interface**
-* **Daily Lesson & Reward Wallet**
-* **Live Market Data & Glossary**
+
+### 📊 Dashboard & Spending Analytics
+![Dashboard](./images/dashboard.png)
+
+### 🤖 FinBot Chat Interface
+![FinBot](./images/finbot.png)
+
+### 🎓 Daily Lesson & Reward Wallet
+![Learn & Rewards](./images/rewards.png)
+
+### 📈 Live Market Data & Glossary
+![Market Data](./images/market.png)
 
 ---
 
