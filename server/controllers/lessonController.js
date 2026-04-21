@@ -3,7 +3,7 @@ const DailyLesson = require('../models/DailyLesson');
 const LessonProgress = require('../models/LessonProgress');
 const UserReward = require('../models/UserReward');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key_to_prevent_crash');
 
 // Rotating topics list
 const TOPICS = [

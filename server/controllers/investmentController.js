@@ -2,7 +2,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Expense = require('../models/Expense');
 const User = require('../models/User');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key_to_prevent_crash');
 
 // ── Static allocation plans ──────────────────────────────────────────────────
 const allocations = {
