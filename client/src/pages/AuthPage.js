@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react'; // Ye add karna hai
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -8,6 +9,7 @@ export default function AuthPage() {
   const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '', monthlyIncome: '' });
 
   const handleSubmit = async (e) => {
@@ -73,7 +75,16 @@ export default function AuthPage() {
             </div>
             <div>
               <label className="label">Password</label>
-              <input className="input" type="password" placeholder="••••••••" value={form.password} onChange={set('password')} required minLength={6} />
+              <div className="relative">
+                <input className="input w-full pr-10" type={showPassword ? "text" : "password"} placeholder="••••••••" value={form.password} onChange={set('password')} required minLength={6} />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-200"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
             {!isLogin && (
               <div>
