@@ -5,7 +5,12 @@ require('dotenv').config();
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({ 
+  origin: function(origin, callback) {
+    return callback(null, true);
+  }, 
+  credentials: true 
+}));
 app.use(express.json());
 
 // Routes
@@ -20,6 +25,11 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/goals', require('./routes/goals'));
 app.use('/api/market', require('./routes/market'));
 app.use('/api/networth', require('./routes/networth'));
+
+// Health check route
+app.get('/', (req, res) => {
+  res.send('MoneyMind API is running perfectly! 🚀');
+});
 
 mongoose
   .connect(process.env.MONGO_URI)
