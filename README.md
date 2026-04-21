@@ -4,6 +4,8 @@
 
 ![Hackathon Themes](https://img.shields.io/badge/Hackathon_Theme-Investment_Guidance_|_Budget_Tracking_|_Financial_Literacy-blue?style=for-the-badge)
 
+**🟢 Live Demo:** [https://moneymind-sakshi.netlify.app](https://moneymind-sakshi.netlify.app)
+
 ## 🎯 The Problem We Are Solving
 While there are hundreds of budget trackers out there, most of them lack two critical things: **Personalized Financial Guidance** and **Understandable Financial Literacy**. Complex financial jargon intimidates the average Indian user. 
 
