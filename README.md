@@ -6,6 +6,10 @@
 
 **🟢 Live Demo:** [https://moneymind-sakshi.netlify.app](https://moneymind-sakshi.netlify.app)
 
+**🔑 Test Credentials (For Judges):**
+- **Email:** test@example.com *(Yahan aap kisi dummy account ka email daal dena jo aapne banaya ho)*
+- **Password:** 123456
+
 ## 🎯 The Problem We Are Solving
 While there are hundreds of budget trackers out there, most of them lack two critical things: **Personalized Financial Guidance** and **Understandable Financial Literacy**. Complex financial jargon intimidates the average Indian user. 
 
