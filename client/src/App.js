@@ -4,6 +4,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
 import Chatbot from './components/Chatbot';
+import axios from 'axios';
+
+axios.defaults.baseURL = 'https://moneymind-hackathon.onrender.com';
 
 
 
