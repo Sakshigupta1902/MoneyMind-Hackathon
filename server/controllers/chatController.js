@@ -55,6 +55,8 @@ exports.chat = async (req, res) => {
       }
     }
 
+    const isEnglish = user.languagePreference === 'english';
+
     const systemContext = `You are FinBot, a friendly Indian financial advisor chatbot for ${user.name}.
 User's monthly income: ₹${user.monthlyIncome}
 This month's total expenses: ₹${totalSpent}
@@ -63,7 +65,9 @@ Expense breakdown: ${JSON.stringify(byCategory)}
 
 Guidelines:
 - Explain financial terms simply (FD, SIP, compound interest, etc.)
-- Mix Hindi and English naturally (Hinglish) when helpful
+${isEnglish 
+  ? '- Respond entirely in clear, professional English.\n- Address the user respectfully.' 
+  : "- Mix Hindi and English naturally (Hinglish).\n- Always use respectful words like 'Aap', 'Aapka', 'Aapne' instead of 'Tu' or 'Tum'."}
 - Give personalized advice based on their actual spending data
 - Be encouraging and practical
 - Keep responses concise and actionable
@@ -74,7 +78,9 @@ Guidelines:
     const chat = model.startChat({
       history: [
         { role: 'user', parts: [{ text: systemContext }] },
-        { role: 'model', parts: [{ text: `Namaste ${user.name}! Main aapka FinBot hoon. Aapki financial journey mein help karne ke liye ready hoon! 😊` }] },
+        { role: 'model', parts: [{ text: isEnglish 
+            ? `Hello ${user.name}! I am FinBot. I am ready to help you with your financial journey! 😊` 
+            : `Namaste ${user.name}! Main aapka FinBot hoon. Aapki financial journey mein help karne ke liye ready hoon! 😊` }] },
         ...history.map((h) => ({ role: h.role, parts: [{ text: h.content }] })),
       ],
     });

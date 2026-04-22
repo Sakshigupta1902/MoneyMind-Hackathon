@@ -14,6 +14,7 @@ export default function ProfilePage() {
     age:           user?.age           || '',
     monthlyIncome: user?.monthlyIncome || '',
     city:          user?.city          || '',
+    languagePreference: user?.languagePreference || 'hinglish',
   });
 
   const [passForm, setPassForm] = useState({
@@ -156,6 +157,17 @@ export default function ProfilePage() {
                   value={profileForm.monthlyIncome} onChange={setP('monthlyIncome')} min={0} />
                 <p className="text-gray-500 text-xs mt-1">
                   Ye change karne se budget suggestions aur AI advice update ho jaayegi
+                </p>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="label">Preferred Language (App & AI)</label>
+                <select className="input"
+                  value={profileForm.languagePreference} onChange={setP('languagePreference')}>
+                  <option value="hinglish">Hinglish (Simple & Friendly)</option>
+                  <option value="english">English (Professional)</option>
+                </select>
+                <p className="text-gray-500 text-xs mt-1">
+                  Is bhasha mein FinBot aur AI aapse baat karenge
                 </p>
               </div>
             </div>

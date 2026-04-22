@@ -10,7 +10,7 @@ export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', password: '', monthlyIncome: '', city: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', monthlyIncome: '', city: '', languagePreference: 'hinglish' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +19,7 @@ export default function AuthPage() {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
       const payload = isLogin
         ? { email: form.email, password: form.password }
-        : { name: form.name, email: form.email, password: form.password, monthlyIncome: Number(form.monthlyIncome), city: form.city };
+        : { name: form.name, email: form.email, password: form.password, monthlyIncome: Number(form.monthlyIncome), city: form.city, languagePreference: form.languagePreference };
       const { data } = await axios.post(endpoint, payload);
       login(data);
       toast.success(isLogin ? 'Welcome back!' : 'Account created!');
@@ -96,6 +96,15 @@ export default function AuthPage() {
               <div>
                 <label className="label">City</label>
                 <input className="input" type="text" placeholder="e.g. Mumbai, Bangalore..." value={form.city} onChange={set('city')} required />
+              </div>
+            )}
+            {!isLogin && (
+              <div>
+                <label className="label">Preferred Language (App & AI)</label>
+                <select className="input" value={form.languagePreference} onChange={set('languagePreference')}>
+                  <option value="hinglish">Hinglish (Simple & Friendly)</option>
+                  <option value="english">English (Professional)</option>
+                </select>
               </div>
             )}
             <button type="submit" className="btn-primary w-full mt-2" disabled={loading}>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { TrendingUp, LayoutDashboard, Receipt, PiggyBank, BookOpen, Gift, LogOut, Target, BarChart2, Wallet, UserCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import axios from 'axios';
 import Overview        from '../components/Overview';
 import ExpenseTracker  from '../components/ExpenseTracker';
@@ -30,6 +31,7 @@ const NAV = [
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
+  const { language, toggleLanguage } = useLanguage();
   const navigate  = useNavigate();
   const location  = useLocation();
   const [points, setPoints] = useState(0);
@@ -79,6 +81,13 @@ export default function DashboardPage() {
             className="flex items-center gap-1 bg-yellow-500/10 border border-yellow-500/30 px-2.5 py-1.5 rounded-full hover:bg-yellow-500/20 transition-colors">
             <span className="text-yellow-400 text-xs">⭐</span>
             <span className="text-yellow-400 font-bold text-xs">{points}</span>
+          </button>
+
+          {/* Language Toggle */}
+          <button onClick={toggleLanguage}
+            className="flex items-center justify-center w-8 h-8 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition-colors text-white font-bold text-xs flex-shrink-0"
+            title="Toggle Language">
+            {language === 'english' ? 'EN' : 'HI'}
           </button>
 
           {/* Notification Bell */}
