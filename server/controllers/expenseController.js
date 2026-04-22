@@ -172,7 +172,7 @@ Is data ke basis pe next month ka prediction karo. Strict JSON format mein retur
   "predictedTotal": <number - next month predicted total expense>,
   "predictedSavings": <number - income minus predicted total>,
   "categoryWise": [
-    { "category": "category name", "predictedAmount": <number>, "trend": "increasing/stable/decreasing", "reason": "1 line Hinglish mein reason" }
+    { "category": "category name", "predictedAmount": <number>, "trend": "increasing/stable/decreasing", "reason": "1 line Hinglish mein reason (jaise mehengai/inflation, festive season, ya past pattern ke hisaab se)" }
   ],
   "topInsight": "2-3 line Hinglish mein main insight - friendly tone mein",
   "savingTip": "1 actionable tip Hinglish mein jo next month savings badha sake",
@@ -220,12 +220,32 @@ Sirf valid JSON return karo, koi extra text nahi.`;
         
         for (const [cat, totalAmt] of Object.entries(byCategory)) {
           const avgAmt = Math.round(totalAmt / monthsCount);
-          predictedTotal += avgAmt;
+          
+          let trend = "stable";
+          let reason = `${cat} ka pichle mahino ke average ke hisaab se calculation.`;
+          let predictedAmount = avgAmt;
+          const catLower = cat.toLowerCase();
+
+          if (catLower.includes('food') || catLower.includes('dine') || catLower.includes('grocer')) {
+            trend = "increasing";
+            reason = "Mehengai (inflation) ki wajah se khane peene ka kharch thoda badh sakta hai.";
+            predictedAmount = Math.round(avgAmt * 1.05); // 5% increase for inflation
+          } else if (catLower.includes('transport') || catLower.includes('travel') || catLower.includes('petrol')) {
+            trend = "increasing";
+            reason = "Travel aur fuel costs fluctuate hote hain, isliye thoda badh sakta hai.";
+            predictedAmount = Math.round(avgAmt * 1.05); // 5% increase
+          } else if (catLower.includes('shop') || catLower.includes('enter') || catLower.includes('movie')) {
+            trend = "decreasing";
+            reason = "Is category mein unnecessary kharch control kiya ja sakta hai.";
+            predictedAmount = Math.round(avgAmt * 0.90); // 10% decrease
+          }
+
+          predictedTotal += predictedAmount;
           categoryWise.push({
             category: cat,
-            predictedAmount: avgAmt,
-            trend: "stable",
-            reason: `${cat} ka pichle mahino ke average ke hisaab se calculation.`
+            predictedAmount: predictedAmount,
+            trend: trend,
+            reason: reason
           });
         }
         // Highest amount wali categories upar dikhane ke liye sort karein
