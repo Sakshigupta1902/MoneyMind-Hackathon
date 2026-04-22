@@ -89,35 +89,33 @@ exports.getSummary = async (req, res) => {
       return acc;
     }, {});
 
-    // Generate smart budget suggestions based on monthly income
-    const budgetSuggestions = Object.entries(byCategory).map(([category, actual]) => {
-      let suggested = 5000; 
-      if (user.monthlyIncome > 0) {
-         const catLower = category.toLowerCase();
-         if (catLower.includes('rent') || catLower.includes('house')) suggested = user.monthlyIncome * 0.30;
-         else if (catLower.includes('food') || catLower.includes('dine')) suggested = user.monthlyIncome * 0.20;
-         else if (catLower.includes('transport') || catLower.includes('travel')) suggested = user.monthlyIncome * 0.10;
-         else if (catLower.includes('shop') || catLower.includes('enter')) suggested = user.monthlyIncome * 0.10;
-         else suggested = user.monthlyIncome * 0.15;
-      } else {
-         suggested = Math.round(actual * 1.2);
-      }
-      return {
-        category,
-        suggested: Math.round(suggested),
-        actual,
-        status: actual > suggested ? 'over' : 'under'
-      };
-    });
+    // Generate smart budget suggestions only if monthly income is set
+    let budgetSuggestions = [];
+    if (user.monthlyIncome > 0) {
+      budgetSuggestions = Object.entries(byCategory).map(([category, actual]) => {
+        let suggested = 0;
+        const catLower = category.toLowerCase();
+        if (catLower.includes('rent') || catLower.includes('house')) suggested = user.monthlyIncome * 0.30;
+        else if (catLower.includes('food') || catLower.includes('dine')) suggested = user.monthlyIncome * 0.20;
+        else if (catLower.includes('transport') || catLower.includes('travel')) suggested = user.monthlyIncome * 0.10;
+        else if (catLower.includes('shop') || catLower.includes('enter')) suggested = user.monthlyIncome * 0.10;
+        else suggested = user.monthlyIncome * 0.05; // Smaller bucket for other categories
+        return {
+          category,
+          suggested: Math.round(suggested),
+          actual,
+          status: actual > suggested ? 'over' : 'under'
+        };
+      });
 
-    // Default suggestions if no expenses exist yet
-    if (budgetSuggestions.length === 0) {
-      const inc = user.monthlyIncome || 30000;
-      budgetSuggestions.push(
-        { category: "Food", suggested: inc * 0.20, actual: 0, status: 'under' },
-        { category: "Transport", suggested: inc * 0.10, actual: 0, status: 'under' },
-        { category: "Shopping", suggested: inc * 0.10, actual: 0, status: 'under' }
-      );
+      // Default suggestions if no expenses exist yet for a user with income
+      if (budgetSuggestions.length === 0) {
+        budgetSuggestions.push(
+          { category: "Food", suggested: Math.round(user.monthlyIncome * 0.20), actual: 0, status: 'under' },
+          { category: "Transport", suggested: Math.round(user.monthlyIncome * 0.10), actual: 0, status: 'under' },
+          { category: "Shopping", suggested: Math.round(user.monthlyIncome * 0.10), actual: 0, status: 'under' }
+        );
+      }
     }
 
     res.json({
@@ -194,8 +192,26 @@ Sirf valid JSON return karo, koi extra text nahi.`;
     console.error('Prediction error (using fallback):', err.message);
     try {
       // Predefined Fallback Data if Gemini API fails
+      // Calculate average from user's history instead of a hardcoded value
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      const fallbackExpenses = await Expense.find({ user: req.user.id, date: { $gte: threeMonthsAgo } });
+
+      let avgTotal = 15000; // A sensible default if no history exists
+      if (fallbackExpenses.length > 0) {
+        const byMonth = {};
+        fallbackExpenses.forEach((e) => {
+          const key = `${e.date.getFullYear()}-${e.date.getMonth() + 1}`;
+          if (!byMonth[key]) byMonth[key] = 0;
+          byMonth[key] += e.amount;
+        });
+        const monthlyTotals = Object.values(byMonth);
+        const totalSum = monthlyTotals.reduce((s, t) => s + t, 0);
+        if (monthlyTotals.length > 0) {
+          avgTotal = Math.round(totalSum / monthlyTotals.length);
+        }
+      }
       const user = await User.findById(req.user.id);
-      const avgTotal = 15000; // Ek default fallback amount
       res.json({
         predictedTotal: avgTotal,
         predictedSavings: user.monthlyIncome > avgTotal ? user.monthlyIncome - avgTotal : 0,
@@ -294,6 +310,15 @@ Sirf valid JSON return karo.`;
     else if (savingsPct >= 20) { healthScore = 7; healthLabel = "Good"; }
     else if (savingsPct < 10) { healthScore = 3; healthLabel = "Poor"; }
 
+    // Dynamically calculate savings based on actual inputs
+    const entAmt = Number(expenses.entertainment) || 0;
+    const shopAmt = Number(expenses.shopping) || 0;
+    const entSuggested = Math.max(0, entAmt - 500);
+    const shopSuggested = Math.max(0, shopAmt - 1000);
+    const entSaving = entAmt - entSuggested;
+    const shopSaving = shopAmt - shopSuggested;
+    const totalExtraSaving = entSaving + shopSaving;
+
     res.json({
       totalExpenses,
       totalSavings: savings,
@@ -307,13 +332,13 @@ Sirf valid JSON return karo.`;
         savings: savings
       },
       suggestions: [
-        { category: "Entertainment", currentAmount: expenses.entertainment || 0, suggestedAmount: Math.max(0, (expenses.entertainment || 0) - 500), saving: 500, tip: "Movie tickets ki jagah OTT subscriptions ka use karo." },
-        { category: "Shopping", currentAmount: expenses.shopping || 0, suggestedAmount: Math.max(0, (expenses.shopping || 0) - 1000), saving: 1000, tip: "Impulse buying se bacho, 24-hour rule follow karo." }
+        { category: "Entertainment", currentAmount: entAmt, suggestedAmount: entSuggested, saving: entSaving, tip: "Movie tickets ki jagah OTT subscriptions ka use karo." },
+        { category: "Shopping", currentAmount: shopAmt, suggestedAmount: shopSuggested, saving: shopSaving, tip: "Impulse buying se bacho, 24-hour rule follow karo." }
       ],
       topAdvice: savingsPct > 20 ? "Bahut badhiya! Tumhari savings track par hai. Is paise ko SIP mein lagana shuru karo." : "Thoda kharch control karna padega bhai! Unnecessary kharch kam karo.",
       yearlyProjection: {
         currentSavings: savings * 12,
-        ifFollowAdvice: (savings + 1500) * 12,
+        ifFollowAdvice: (savings + totalExtraSaving) * 12,
         fdReturns: Math.round((savings * 12) * 1.07)
       },
       emergencyFundStatus: `Current savings se tum ${Math.round((savings * 12) / (totalExpenses || 1))} mahine ka emergency fund bana sakte ho 1 saal mein.`
