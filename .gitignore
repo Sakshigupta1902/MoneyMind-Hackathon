@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# Environment variables (Very Important!)
+.env
+
+# Build files
+client/build/
+
+# OS specific
+.DS_Store
