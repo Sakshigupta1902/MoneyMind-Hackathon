@@ -197,32 +197,50 @@ Sirf valid JSON return karo, koi extra text nahi.`;
       threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
       const fallbackExpenses = await Expense.find({ user: req.user.id, date: { $gte: threeMonthsAgo } });
 
-      let avgTotal = 15000; // A sensible default if no history exists
+      let predictedTotal = 15000;
+      let categoryWise = [
+        { category: "Food & Dining", predictedAmount: 4500, trend: "stable", reason: "Khane ka kharch lagbhag same rehta hai." },
+        { category: "Shopping", predictedAmount: 1500, trend: "decreasing", reason: "Pichle mahine shopping hui thi, is baar kam hogi." },
+        { category: "Transport", predictedAmount: 2250, trend: "increasing", reason: "Travel aur petrol ka kharch thoda badh sakta hai." }
+      ];
+
       if (fallbackExpenses.length > 0) {
-        const byMonth = {};
+        const uniqueMonths = new Set();
+        const byCategory = {};
         fallbackExpenses.forEach((e) => {
-          const key = `${e.date.getFullYear()}-${e.date.getMonth() + 1}`;
-          if (!byMonth[key]) byMonth[key] = 0;
-          byMonth[key] += e.amount;
+          const monthKey = `${e.date.getFullYear()}-${e.date.getMonth() + 1}`;
+          uniqueMonths.add(monthKey);
+          if (!byCategory[e.category]) byCategory[e.category] = 0;
+          byCategory[e.category] += e.amount;
         });
-        const monthlyTotals = Object.values(byMonth);
-        const totalSum = monthlyTotals.reduce((s, t) => s + t, 0);
-        if (monthlyTotals.length > 0) {
-          avgTotal = Math.round(totalSum / monthlyTotals.length);
+        
+        const monthsCount = Math.max(1, uniqueMonths.size);
+        predictedTotal = 0;
+        categoryWise = [];
+        
+        for (const [cat, totalAmt] of Object.entries(byCategory)) {
+          const avgAmt = Math.round(totalAmt / monthsCount);
+          predictedTotal += avgAmt;
+          categoryWise.push({
+            category: cat,
+            predictedAmount: avgAmt,
+            trend: "stable",
+            reason: `${cat} ka pichle mahino ke average ke hisaab se calculation.`
+          });
         }
+        // Highest amount wali categories upar dikhane ke liye sort karein
+        categoryWise.sort((a, b) => b.predictedAmount - a.predictedAmount);
       }
       const user = await User.findById(req.user.id);
+      const topCategories = categoryWise.slice(0, 2).map(c => c.category);
+
       res.json({
-        predictedTotal: avgTotal,
-        predictedSavings: user.monthlyIncome > avgTotal ? user.monthlyIncome - avgTotal : 0,
-        categoryWise: [
-          { category: "Food & Dining", predictedAmount: Math.round(avgTotal * 0.3), trend: "stable", reason: "Khane ka kharch lagbhag same rehta hai." },
-          { category: "Shopping", predictedAmount: Math.round(avgTotal * 0.1), trend: "decreasing", reason: "Pichle mahine shopping hui thi, is baar kam hogi." },
-          { category: "Transport", predictedAmount: Math.round(avgTotal * 0.15), trend: "increasing", reason: "Travel aur petrol ka kharch thoda badh sakta hai." }
-        ],
+        predictedTotal,
+        predictedSavings: user.monthlyIncome > predictedTotal ? user.monthlyIncome - predictedTotal : 0,
+        categoryWise,
         topInsight: "Aapka kharch thoda aur control ho sakta hai. Bahar khana thoda kam karein.",
         savingTip: "Weekend pe bahar jaane ke bajaye doston ko ghar par invite karein, paise bachenge!",
-        warningCategories: ["Shopping", "Entertainment"]
+        warningCategories: topCategories.length > 0 ? topCategories : ["Shopping", "Entertainment"]
       });
     } catch (fallbackErr) {
       res.status(500).json({ message: 'Prediction generate nahi ho paya. Thodi der baad try karein.' });
