@@ -92,14 +92,32 @@ exports.getSummary = async (req, res) => {
     // Generate smart budget suggestions only if monthly income is set
     let budgetSuggestions = [];
     if (user.monthlyIncome > 0) {
+      const getCityTier = (city) => {
+        if (!city) return 'tier2';
+        const t1 = ['mumbai', 'bangalore', 'bengaluru', 'delhi', 'new delhi', 'chennai', 'hyderabad', 'kolkata', 'pune', 'gurgaon', 'noida'];
+        const c = city.toLowerCase();
+        if (t1.some(t => c.includes(t))) return 'tier1';
+        return 'tier2';
+      };
+      const tier = getCityTier(user.city);
+
       budgetSuggestions = Object.entries(byCategory).map(([category, actual]) => {
         let suggested = 0;
         const catLower = category.toLowerCase();
-        if (catLower.includes('rent') || catLower.includes('house')) suggested = user.monthlyIncome * 0.30;
-        else if (catLower.includes('food') || catLower.includes('dine')) suggested = user.monthlyIncome * 0.20;
-        else if (catLower.includes('transport') || catLower.includes('travel')) suggested = user.monthlyIncome * 0.10;
+        if (catLower.includes('rent') || catLower.includes('house')) {
+          suggested = tier === 'tier1' ? Math.max(15000, user.monthlyIncome * 0.30) : Math.max(8000, user.monthlyIncome * 0.20);
+        }
+        else if (catLower.includes('food') || catLower.includes('dine')) {
+          suggested = tier === 'tier1' ? Math.max(8000, user.monthlyIncome * 0.20) : Math.max(5000, user.monthlyIncome * 0.20);
+        }
+        else if (catLower.includes('transport') || catLower.includes('travel')) {
+          suggested = tier === 'tier1' ? Math.max(3000, user.monthlyIncome * 0.10) : Math.max(2000, user.monthlyIncome * 0.10);
+        }
         else if (catLower.includes('shop') || catLower.includes('enter')) suggested = user.monthlyIncome * 0.10;
         else suggested = user.monthlyIncome * 0.05; // Smaller bucket for other categories
+        
+        suggested = Math.min(suggested, user.monthlyIncome * 0.5); // Sanity cap over 50%
+        
         return {
           category,
           suggested: Math.round(suggested),
@@ -110,10 +128,14 @@ exports.getSummary = async (req, res) => {
 
       // Default suggestions if no expenses exist yet for a user with income
       if (budgetSuggestions.length === 0) {
+        const rentSug = tier === 'tier1' ? Math.max(15000, user.monthlyIncome * 0.30) : Math.max(8000, user.monthlyIncome * 0.20);
+        const foodSug = tier === 'tier1' ? Math.max(8000, user.monthlyIncome * 0.20) : Math.max(5000, user.monthlyIncome * 0.20);
+        const transSug = tier === 'tier1' ? Math.max(3000, user.monthlyIncome * 0.10) : Math.max(2000, user.monthlyIncome * 0.10);
+        
         budgetSuggestions.push(
-          { category: "Food", suggested: Math.round(user.monthlyIncome * 0.20), actual: 0, status: 'under' },
-          { category: "Transport", suggested: Math.round(user.monthlyIncome * 0.10), actual: 0, status: 'under' },
-          { category: "Shopping", suggested: Math.round(user.monthlyIncome * 0.10), actual: 0, status: 'under' }
+          { category: "Rent", suggested: Math.round(rentSug), actual: 0, status: 'under' },
+          { category: "Food", suggested: Math.round(foodSug), actual: 0, status: 'under' },
+          { category: "Transport", suggested: Math.round(transSug), actual: 0, status: 'under' }
         );
       }
     }
@@ -163,6 +185,7 @@ exports.getAIPrediction = async (req, res) => {
 
 User ka naam: ${user.name}
 Monthly Income: ₹${user.monthlyIncome}
+City/Location: ${user.city || 'India'} (Is city ke cost of living ke hisaab se prediction karo)
 
 Pichle mahino ka expense data:
 ${JSON.stringify(byMonth, null, 2)}
@@ -272,7 +295,7 @@ Sirf valid JSON return karo, koi extra text nahi.`;
 
 exports.getAIFinancialPlan = async (req, res) => {
   try {
-    const { salary, expenses } = req.body;
+    const { salary, expenses, city } = req.body;
     // expenses = { rent, food, transport, entertainment, health, shopping, education, other }
 
     if (!salary || !expenses)
@@ -286,6 +309,7 @@ exports.getAIFinancialPlan = async (req, res) => {
     const prompt = `Tu ek friendly Indian financial planner AI hai jo simple Hinglish mein baat karta hai.
 
 User ki details:
+City: ${city || 'India'} (Consider cost of living and average rent of this city)
 Monthly Salary: ₹${salary}
 Monthly Expenses:
 - Rent/Housing: ₹${expenses.rent || 0}
