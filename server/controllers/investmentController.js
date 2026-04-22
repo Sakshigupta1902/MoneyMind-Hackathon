@@ -134,13 +134,7 @@ exports.getAIAdvice = async (req, res) => {
 
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
-    const isEnglish = user.languagePreference === 'english';
-    const langInstruction = isEnglish 
-      ? "clear, professional English" 
-      : "simple Hinglish. Hamesha 'Aap' aur 'Aapka' use karo ('Tu' ya 'Tum' bilkul nahi)";
-    const textInstruction = isEnglish ? "in English" : "Hinglish mein";
-
-    const prompt = `You are an expert Indian financial advisor. Respond in ${langInstruction}.
+    const prompt = `Tu ek expert Indian financial advisor hai jo simple Hinglish mein samjhata hai.
 
 User Details:
 - Naam: ${user.name}
@@ -154,19 +148,19 @@ User Details:
 
 Ek detailed personalized advice do. Strict JSON format mein return karo:
 {
-  "personalizedSummary": "3-4 lines ${textInstruction} - user ke specific situation ke hisaab se advice. Unka naam use karo.",
-  "whyThisPlan": "2-3 lines ${textInstruction} explain karo kyun ye plan unke liye best hai",
+  "personalizedSummary": "3-4 line Hinglish mein - user ke specific situation ke hisaab se advice. Unka naam use karo.",
+  "whyThisPlan": "2-3 line mein explain karo kyun ye plan unke liye best hai",
   "howToStart": [
-    "Step 1: Specific action ${textInstruction}",
-    "Step 2: Specific action ${textInstruction}",
-    "Step 3: Specific action ${textInstruction}"
+    "Step 1: Specific action Hinglish mein",
+    "Step 2: Specific action Hinglish mein",
+    "Step 3: Specific action Hinglish mein"
   ],
   "importantWarnings": [
-    "Warning 1 ${textInstruction}",
-    "Warning 2 ${textInstruction}"
+    "Warning 1 Hinglish mein",
+    "Warning 2 Hinglish mein"
   ],
-  "alternativeTip": "Ek alternative suggestion agar ye plan suit na kare ${textInstruction}",
-  "motivationalNote": "1 line encouraging message ${textInstruction}"
+  "alternativeTip": "Ek alternative suggestion agar ye plan suit na kare",
+  "motivationalNote": "1 line encouraging message"
 }
 
 Sirf valid JSON return karo.`;

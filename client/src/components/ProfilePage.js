@@ -2,14 +2,10 @@ import { useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
 import { User, Lock, Save, TrendingUp } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, setUser } = useAuth();
-  const { language } = useLanguage();
-  
-  const isEng = language === 'english';
 
   const [profileForm, setProfileForm] = useState({
     name:          user?.name          || '',
@@ -18,7 +14,6 @@ export default function ProfilePage() {
     age:           user?.age           || '',
     monthlyIncome: user?.monthlyIncome || '',
     city:          user?.city          || '',
-    languagePreference: user?.languagePreference || 'hinglish',
   });
 
   const [passForm, setPassForm] = useState({
@@ -44,9 +39,9 @@ export default function ProfilePage() {
         monthlyIncome: Number(profileForm.monthlyIncome) || 0,
       });
       setUser(data);
-      toast.success(isEng ? 'Profile updated successfully! ✅' : 'Profile update ho gaya! ✅');
+      toast.success('Profile update ho gaya! ✅');
     } catch (err) {
-      toast.error(err.response?.data?.message || (isEng ? 'Update failed' : 'Update nahi hua'));
+      toast.error(err.response?.data?.message || 'Update nahi hua');
     } finally {
       setSavingProfile(false);
     }
@@ -55,19 +50,19 @@ export default function ProfilePage() {
   const handlePassChange = async (e) => {
     e.preventDefault();
     if (passForm.newPassword !== passForm.confirmPassword)
-      return toast.error(isEng ? 'Passwords do not match' : 'New passwords match nahi kar rahe');
+      return toast.error('New passwords match nahi kar rahe');
     if (passForm.newPassword.length < 6)
-      return toast.error(isEng ? 'Password must be at least 6 characters' : 'Password kam se kam 6 characters ka hona chahiye');
+      return toast.error('Password kam se kam 6 characters ka hona chahiye');
     setSavingPass(true);
     try {
       await axios.put('/api/auth/change-password', {
         currentPassword: passForm.currentPassword,
         newPassword:     passForm.newPassword,
       });
-      toast.success(isEng ? 'Password changed successfully! 🔒' : 'Password change ho gaya! 🔒');
+      toast.success('Password change ho gaya! 🔒');
       setPassForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
-      toast.error(err.response?.data?.message || (isEng ? 'Failed to change password' : 'Password change nahi hua'));
+      toast.error(err.response?.data?.message || 'Password change nahi hua');
     } finally {
       setSavingPass(false);
     }
@@ -78,7 +73,7 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      <h2 className="text-xl font-bold text-white">{isEng ? 'My Profile' : 'Meri Profile'}</h2>
+      <h2 className="text-xl font-bold text-white">My Profile</h2>
 
       {/* Avatar + Name Card */}
       <div className="card flex items-center gap-5">
@@ -110,8 +105,8 @@ export default function ProfilePage() {
       {/* Tabs */}
       <div className="flex bg-gray-900 border border-gray-800 rounded-xl p-1 gap-1 w-fit">
         {[
-          { val: 'profile',  label: isEng ? '👤 Edit Profile' : '👤 Profile Edit Karein' },
-          { val: 'password', label: isEng ? '🔒 Change Password' : '🔒 Password Badlein' },
+          { val: 'profile',  label: '👤 Edit Profile'     },
+          { val: 'password', label: '🔒 Change Password'  },
         ].map(({ val, label }) => (
           <button key={val} onClick={() => setActiveTab(val)}
             className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -191,23 +186,23 @@ export default function ProfilePage() {
           </h3>
           <form onSubmit={handlePassChange} className="space-y-4 max-w-sm">
             <div>
-              <label className="label">{isEng ? 'Current Password' : 'Purana Password'}</label>
+              <label className="label">Current Password</label>
               <input className="input" type="password" placeholder="••••••••"
                 value={passForm.currentPassword} onChange={setPw('currentPassword')} required />
             </div>
             <div>
-              <label className="label">{isEng ? 'New Password' : 'Naya Password'}</label>
+              <label className="label">New Password</label>
               <input className="input" type="password" placeholder="••••••••"
                 value={passForm.newPassword} onChange={setPw('newPassword')} required minLength={6} />
             </div>
             <div>
-              <label className="label">{isEng ? 'Confirm New Password' : 'Naya Password Confirm Karo'}</label>
+              <label className="label">Confirm New Password</label>
               <input className="input" type="password" placeholder="••••••••"
                 value={passForm.confirmPassword} onChange={setPw('confirmPassword')} required minLength={6} />
             </div>
             <button type="submit" className="btn-primary flex items-center gap-2" disabled={savingPass}>
               <Lock className="w-4 h-4" />
-              {savingPass ? (isEng ? 'Changing...' : 'Change ho raha hai...') : (isEng ? 'Change Password' : 'Password Change Karo')}
+              {savingPass ? 'Changing...' : 'Password Change Karo'}
             </button>
           </form>
         </div>

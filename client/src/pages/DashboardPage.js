@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { TrendingUp, LayoutDashboard, Receipt, PiggyBank, BookOpen, Gift, LogOut, Target, BarChart2, Wallet, UserCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
 import axios from 'axios';
 import Overview        from '../components/Overview';
 import ExpenseTracker  from '../components/ExpenseTracker';
@@ -17,28 +16,24 @@ import NetWorthTracker from '../components/NetWorthTracker';
 import ProfilePage     from '../components/ProfilePage';
 import FinanceGlossary from '../components/FinanceGlossary';
 
-const getNav = (isEng) => [
-  { path: '/',         label: 'Overview',                      icon: LayoutDashboard },
-  { path: '/expenses', label: isEng ? 'Expenses'  : 'Kharcha', icon: Receipt         },
-  { path: '/budget',   label: 'Budget',                        icon: Target          },
-  { path: '/goals',    label: isEng ? 'Goals'     : 'Lakshya', icon: PiggyBank       },
-  { path: '/networth', label: 'Net Worth',                     icon: Wallet          },
-  { path: '/market',   label: 'Market',                        icon: BarChart2       },
-  { path: '/invest',   label: 'Invest',                        icon: TrendingUp      },
-  { path: '/learn',    label: isEng ? 'Learn'     : 'Seekho',  icon: BookOpen        },
-  { path: '/rewards',  label: 'Rewards',                       icon: Gift            },
+const NAV = [
+  { path: '/',         label: 'Overview', icon: LayoutDashboard },
+  { path: '/expenses', label: 'Expenses', icon: Receipt         },
+  { path: '/budget',   label: 'Budget',   icon: Target          },
+  { path: '/goals',    label: 'Goals',    icon: PiggyBank       },
+  { path: '/networth', label: 'Net Worth',icon: Wallet          },
+  { path: '/market',   label: 'Market',   icon: BarChart2       },
+  { path: '/invest',   label: 'Invest',   icon: TrendingUp      },
+  { path: '/learn',    label: 'Learn',    icon: BookOpen        },
+  { path: '/rewards',  label: 'Rewards',  icon: Gift            },
 ];
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
-  const { language, toggleLanguage } = useLanguage();
   const navigate  = useNavigate();
   const location  = useLocation();
   const [points, setPoints] = useState(0);
   
-  const isEng = language === 'english';
-  const navLinks = getNav(isEng);
-
   useEffect(() => {
     axios.get('/api/reward')
       .then(({ data }) => setPoints(data.totalPoints))
@@ -64,7 +59,7 @@ export default function DashboardPage() {
 
         {/* Nav Links — scrollable on small screens */}
         <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide mx-2">
-          {navLinks.map(({ path, label, icon: Icon }) => (
+          {NAV.map(({ path, label, icon: Icon }) => (
             <button key={path} onClick={() => navigate(path)}
               className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
                 location.pathname === path
@@ -84,13 +79,6 @@ export default function DashboardPage() {
             className="flex items-center gap-1 bg-yellow-500/10 border border-yellow-500/30 px-2.5 py-1.5 rounded-full hover:bg-yellow-500/20 transition-colors">
             <span className="text-yellow-400 text-xs">⭐</span>
             <span className="text-yellow-400 font-bold text-xs">{points}</span>
-          </button>
-
-          {/* Language Toggle */}
-          <button onClick={toggleLanguage}
-            className="flex items-center justify-center w-8 h-8 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition-colors text-white font-bold text-xs flex-shrink-0"
-            title="Toggle Language">
-            {language === 'english' ? 'EN' : 'HI'}
           </button>
 
           {/* Notification Bell */}

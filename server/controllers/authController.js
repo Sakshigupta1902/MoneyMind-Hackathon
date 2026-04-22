@@ -7,13 +7,13 @@ const generateToken = (user) =>
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, monthlyIncome, city, languagePreference } = req.body;
+    const { name, email, password, monthlyIncome, city } = req.body;
     if (await User.findOne({ email }))
       return res.status(400).json({ message: 'Email already registered' });
 
     const hashed = await bcrypt.hash(password, 12);
-    const user = await User.create({ name, email, password: hashed, monthlyIncome, city, languagePreference });
-    res.status(201).json({ token: generateToken(user), user: { id: user._id, name: user.name, email: user.email, monthlyIncome: user.monthlyIncome, city: user.city, languagePreference: user.languagePreference } });
+    const user = await User.create({ name, email, password: hashed, monthlyIncome, city });
+    res.status(201).json({ token: generateToken(user), user: { id: user._id, name: user.name, email: user.email, monthlyIncome: user.monthlyIncome, city: user.city } });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -26,7 +26,7 @@ exports.login = async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password)))
       return res.status(400).json({ message: 'Invalid credentials' });
 
-    res.json({ token: generateToken(user), user: { id: user._id, name: user.name, email: user.email, monthlyIncome: user.monthlyIncome, city: user.city, languagePreference: user.languagePreference } });
+    res.json({ token: generateToken(user), user: { id: user._id, name: user.name, email: user.email, monthlyIncome: user.monthlyIncome, city: user.city } });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -56,10 +56,10 @@ exports.updateIncome = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phone, occupation, age, monthlyIncome, city, languagePreference } = req.body;
+    const { name, phone, occupation, age, monthlyIncome, city } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { name, phone, occupation, age, monthlyIncome, city, languagePreference },
+      { name, phone, occupation, age, monthlyIncome, city },
       { new: true }
     ).select('-password');
     res.json(user);

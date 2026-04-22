@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useLanguage } from '../context/LanguageContext';
 import { BookOpen, Search, Info } from 'lucide-react';
 
 const TERMS = [
@@ -97,8 +96,6 @@ const TERMS = [
 
 export default function FinanceGlossary() {
   const [searchTerm, setSearchTerm] = useState('');
-  const { language } = useLanguage();
-  const isEng = language === 'english';
 
   const filteredTerms = TERMS.filter(t => 
     t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -111,15 +108,15 @@ export default function FinanceGlossary() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-blue-400" /> {isEng ? 'Finance in Simple Language' : 'Asaan Bhasha Mein Finance (Glossary)'}
+            <BookOpen className="w-6 h-6 text-blue-400" /> Asaan Bhasha Mein Finance (Glossary)
           </h2>
-          <p className="text-gray-400 text-sm mt-1">{isEng ? 'Understand complex financial terms with real-life examples.' : 'Mushkil financial terms ko real-life examples se samjhein.'}</p>
+          <p className="text-gray-400 text-sm mt-1">Mushkil financial terms ko real-life examples se samjhein.</p>
         </div>
         <div className="relative">
           <Search className="w-5 h-5 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
           <input 
             type="text" 
-            placeholder={isEng ? "Search (e.g. PPF, FD, Gold)..." : "Search karo (e.g. PPF, FD, Sona)..."}
+            placeholder="Search karo (e.g. PPF, FD, Sona)..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 input w-full md:w-72 bg-gray-900 border-gray-700 focus:border-blue-500"
@@ -138,17 +135,17 @@ export default function FinanceGlossary() {
               <span className="text-xs font-medium px-2 py-1 bg-gray-800 text-gray-400 rounded-full">{term.category}</span>
             </div>
             <p className="text-blue-300 text-sm font-medium leading-relaxed">
-              <span className="text-blue-400 font-bold">{isEng ? 'Meaning:' : 'Matlab:'}</span> {isEng ? term.meaning_en : term.meaning}
+              <span className="text-blue-400 font-bold">Matlab:</span> {term.meaning}
             </p>
             <div className="bg-gray-800/50 p-3 rounded-xl flex items-start gap-2 text-sm text-gray-300 leading-relaxed">
               <Info className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-              <p><span className="text-emerald-400 font-bold">{isEng ? 'Example:' : 'Example:'}</span> {isEng ? term.example_en : term.example}</p>
+              <p><span className="text-emerald-400 font-bold">Example:</span> {term.example}</p>
             </div>
           </div>
         ))}
         {filteredTerms.length === 0 && (
           <div className="col-span-1 md:col-span-2 text-center py-10 text-gray-500">
-            {isEng ? 'Oops! This term is not in the dictionary yet. Try again.' : 'Arey! Ye term abhi dictionary mein nahi hai. Dobara search karein.'}
+            Arey! Ye term abhi dictionary mein nahi hai. Dobara search karein.
           </div>
         )}
       </div>

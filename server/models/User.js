@@ -11,7 +11,6 @@ const userSchema = new mongoose.Schema(
     age:           { type: Number, default: null },
     avatar:        { type: String, default: '' }, // initials-based, no file upload needed
     currency:      { type: String, default: '₹' },
-    languagePreference: { type: String, enum: ['english', 'hinglish'], default: 'hinglish' },
   },
   { timestamps: true }
 );

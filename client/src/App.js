@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { LanguageProvider } from './context/LanguageContext';
 import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
 import Chatbot from './components/Chatbot';
@@ -34,11 +33,9 @@ const AppRoutes = () => {
 export default function App() {
   return (
     <AuthProvider>
-      <LanguageProvider>
         <BrowserRouter>
           <AppRoutes />
         </BrowserRouter>
-      </LanguageProvider>
     </AuthProvider>
   );
 }
