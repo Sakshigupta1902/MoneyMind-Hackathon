@@ -13,6 +13,7 @@ export default function ProfilePage() {
     occupation:    user?.occupation    || '',
     age:           user?.age           || '',
     monthlyIncome: user?.monthlyIncome || '',
+    city:          user?.city          || '',
   });
 
   const [passForm, setPassForm] = useState({
@@ -92,6 +93,11 @@ export default function ProfilePage() {
                 🎂 {user?.age} years
               </span>
             )}
+            {user?.city && (
+              <span className="bg-emerald-500/20 text-emerald-400 text-xs px-2 py-0.5 rounded-full">
+                📍 {user?.city}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -138,6 +144,11 @@ export default function ProfilePage() {
                 <label className="label">Age</label>
                 <input className="input" type="number" placeholder="25"
                   value={profileForm.age} onChange={setP('age')} min={1} max={100} />
+              </div>
+              <div>
+                <label className="label">City</label>
+                <input className="input" type="text" placeholder="e.g. Mumbai, Bangalore..."
+                  value={profileForm.city} onChange={setP('city')} />
               </div>
               <div className="sm:col-span-2">
                 <label className="label">Monthly Income (₹)</label>
